@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Metadata {
+  path     String @id
+  composer String @default("")
+  tags     String @default("[]")
+  notes    String @default("")
+}
+
+model Share {
+  token     String @id
+  path      String
+  label     String @default("")
+  createdAt String @default(dbgenerated("(datetime('now'))")) @map("created_at")
+}
