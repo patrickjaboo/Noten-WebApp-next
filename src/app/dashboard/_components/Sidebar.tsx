@@ -4,7 +4,7 @@ import { useState } from "react";
 import { PdfFile, MetadataMap, Share } from "@/types";
 import { Filter } from "../page";
 import { getTagColor } from "./TagBadge";
-import { Folder, FolderOpen, Link2, X, FileText, Check } from "lucide-react";
+import { Tag, Link2, X, FileText, Check } from "lucide-react";
 
 type Props = {
   files: PdfFile[];
@@ -27,9 +27,12 @@ export function Sidebar({
 }: Props) {
   const [copied, setCopied] = useState<string | null>(null);
 
-  const folders = Array.from(
-    new Set(files.map((f) => f.folder).filter(Boolean))
-  ).sort() as string[];
+  const kategorieCounts: Record<string, number> = {};
+  for (const file of files) {
+    const k = meta[file.path]?.kategorie;
+    if (k) kategorieCounts[k] = (kategorieCounts[k] ?? 0) + 1;
+  }
+  const sortedKategorien = Object.entries(kategorieCounts).sort((a, b) => a[0].localeCompare(b[0]));
 
   const tagCounts: Record<string, number> = {};
   for (const file of files) {
@@ -87,9 +90,6 @@ export function Sidebar({
     onShareDeleted(token);
   }
 
-  // Folder share rows: all real folders + root ("") entry
-  const folderRows = [...folders.map(f => ({ path: f, label: f })), { path: "", label: "Stammverzeichnis" }];
-
   const fileShares = shares.filter((s) => !s.isFolder);
 
   return (
@@ -112,59 +112,30 @@ export function Sidebar({
         </button>
       </div>
 
-      {folderRows.length > 1 && (
+      {sortedKategorien.length > 0 && (
         <div className="px-3 pb-3">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-1 mb-1.5">
-            Ordner
+            Kategorien
           </p>
           <div className="space-y-0.5">
-            {folderRows.map(({ path: folderPath, label }) => {
-              const isRoot = folderPath === "";
-              const count = isRoot
-                ? files.filter((f) => !f.folder).length
-                : files.filter((f) => f.folder === folderPath).length;
-              const active = isRoot
-                ? false
-                : isActive({ type: "folder", value: folderPath });
-              const hasShare = !!folderShareFor(folderPath);
-              const isCopied = copied === folderPath;
-
+            {sortedKategorien.map(([kat, count]) => {
+              const active = isActive({ type: "kategorie", value: kat });
               return (
-                <div key={folderPath || "__root__"} className="group flex items-center gap-1">
-                  <button
-                    onClick={() => !isRoot && onFilterChange({ type: "folder", value: folderPath })}
-                    className={`flex-1 flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left min-w-0 ${
-                      active
-                        ? "bg-indigo-50 text-indigo-700 font-medium"
-                        : isRoot
-                        ? "text-slate-400 italic hover:bg-slate-50"
-                        : "text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    {active
-                      ? <FolderOpen className="w-4 h-4 shrink-0 text-indigo-500" />
-                      : <Folder className={`w-4 h-4 shrink-0 ${isRoot ? "text-slate-300" : "text-slate-400"}`} />
-                    }
-                    <span className="flex-1 truncate">{label}</span>
-                    <span className={`text-xs tabular-nums ${active ? "text-indigo-500" : "text-slate-400"}`}>
-                      {count}
-                    </span>
-                  </button>
-                  <button
-                    onClick={(e) => handleFolderShare(e, folderPath, label)}
-                    title={hasShare ? "Link kopieren" : "Link erstellen"}
-                    className={`shrink-0 p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 ${
-                      hasShare
-                        ? "text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50"
-                        : "text-slate-300 hover:text-indigo-500 hover:bg-indigo-50"
-                    }`}
-                  >
-                    {isCopied
-                      ? <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      : <Link2 className="w-3.5 h-3.5" />
-                    }
-                  </button>
-                </div>
+                <button
+                  key={kat}
+                  onClick={() => onFilterChange({ type: "kategorie", value: kat })}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
+                    active
+                      ? "bg-indigo-50 text-indigo-700 font-medium"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <Tag className={`w-4 h-4 shrink-0 ${active ? "text-indigo-500" : "text-slate-400"}`} />
+                  <span className="flex-1 truncate">{kat}</span>
+                  <span className={`text-xs tabular-nums ${active ? "text-indigo-500" : "text-slate-400"}`}>
+                    {count}
+                  </span>
+                </button>
               );
             })}
           </div>

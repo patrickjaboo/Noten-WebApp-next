@@ -5,6 +5,7 @@ export type PdfFile = {
 
 export type Metadata = {
   composer: string;
+  kategorie: string;
   tags: string[];
   notes: string;
 };

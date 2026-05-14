@@ -34,7 +34,7 @@ export function FileTable({
   const [deleting, setDeleting] = useState(false);
 
   const filtered = files.filter((f) => {
-    if (activeFilter.type === "folder") return f.folder === activeFilter.value;
+    if (activeFilter.type === "kategorie") return meta[f.path]?.kategorie === activeFilter.value;
     if (activeFilter.type === "tag") return meta[f.path]?.tags?.includes(activeFilter.value) ?? false;
     return true;
   });
@@ -46,6 +46,7 @@ export function FileTable({
         return (
           f.path.toLowerCase().includes(q) ||
           (m?.composer?.toLowerCase().includes(q) ?? false) ||
+          (m?.kategorie?.toLowerCase().includes(q) ?? false) ||
           (m?.tags?.some((t) => t.toLowerCase().includes(q)) ?? false) ||
           (m?.notes?.toLowerCase().includes(q) ?? false)
         );
@@ -99,7 +100,7 @@ export function FileTable({
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left">
               <th className="px-5 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Datei</th>
-              <th className="px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Ordner</th>
+              <th className="px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Kategorie</th>
               <th className="px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Komponist</th>
               <th className="px-4 py-2.5 text-xs font-medium text-slate-500 uppercase tracking-wide">Tags</th>
               <th className="px-4 py-2.5 text-right text-xs font-medium text-slate-500 uppercase tracking-wide">Aktionen</th>
@@ -137,7 +138,7 @@ export function FileTable({
                     </a>
                   </td>
                   <td className="px-4 py-3 text-slate-500 text-xs">
-                    {f.folder || <span className="text-slate-300">—</span>}
+                    {m?.kategorie || <span className="text-slate-300">—</span>}
                   </td>
                   <td className="px-4 py-3 text-slate-600 text-sm">
                     {m?.composer || <span className="text-slate-300">—</span>}

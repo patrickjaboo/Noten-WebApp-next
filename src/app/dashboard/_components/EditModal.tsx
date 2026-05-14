@@ -36,6 +36,7 @@ export function EditModal({
   onShareDeleted,
 }: Props) {
   const [composer, setComposer] = useState("");
+  const [kategorie, setKategorie] = useState("");
   const [tagsInput, setTagsInput] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
@@ -46,10 +47,12 @@ export function EditModal({
   useEffect(() => {
     if (open && metadata) {
       setComposer(metadata.composer);
+      setKategorie(metadata.kategorie);
       setTagsInput(metadata.tags.join(", "));
       setNotes(metadata.notes);
     } else if (open) {
       setComposer("");
+      setKategorie("");
       setTagsInput("");
       setNotes("");
     }
@@ -66,7 +69,7 @@ export function EditModal({
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean);
-    const meta: Metadata = { composer, tags, notes };
+    const meta: Metadata = { composer, kategorie, tags, notes };
     await fetch(`/api/metadata/${filePath}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -132,6 +135,16 @@ export function EditModal({
               value={composer}
               onChange={(e) => setComposer(e.target.value)}
               placeholder="z.B. Bach, Johann Sebastian"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="kategorie">Kategorie</Label>
+            <Input
+              id="kategorie"
+              value={kategorie}
+              onChange={(e) => setKategorie(e.target.value)}
+              placeholder="z.B. Klassik, Kirchenlied, Pop"
             />
           </div>
 

@@ -13,13 +13,14 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const body = await request.json().catch(() => ({}));
   const composer = typeof body.composer === "string" ? body.composer : "";
+  const kategorie = typeof body.kategorie === "string" ? body.kategorie : "";
   const tags = Array.isArray(body.tags) ? body.tags : [];
   const notes = typeof body.notes === "string" ? body.notes : "";
 
   await prisma.metadata.upsert({
     where: { path: filePath },
-    update: { composer, tags: JSON.stringify(tags), notes },
-    create: { path: filePath, composer, tags: JSON.stringify(tags), notes },
+    update: { composer, kategorie, tags: JSON.stringify(tags), notes },
+    create: { path: filePath, composer, kategorie, tags: JSON.stringify(tags), notes },
   });
 
   return NextResponse.json({ ok: true });

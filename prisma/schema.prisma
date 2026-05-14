@@ -8,10 +8,11 @@ datasource db {
 }
 
 model Metadata {
-  path     String @id
-  composer String @default("")
-  tags     String @default("[]")
-  notes    String @default("")
+  path      String @id
+  composer  String @default("")
+  kategorie String @default("")
+  tags      String @default("[]")
+  notes     String @default("")
 }
 
 model Share {

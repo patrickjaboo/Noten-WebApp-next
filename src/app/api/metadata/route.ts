@@ -7,10 +7,11 @@ export async function GET() {
   if (authResult instanceof NextResponse) return authResult;
 
   const rows = await prisma.metadata.findMany();
-  const result: Record<string, { composer: string; tags: string[]; notes: string }> = {};
+  const result: Record<string, { composer: string; kategorie: string; tags: string[]; notes: string }> = {};
   for (const row of rows) {
     result[row.path] = {
       composer: row.composer,
+      kategorie: row.kategorie,
       tags: JSON.parse(row.tags) as string[],
       notes: row.notes,
     };

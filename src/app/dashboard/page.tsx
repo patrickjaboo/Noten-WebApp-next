@@ -17,7 +17,7 @@ import {
 
 export type Filter =
   | { type: "all" }
-  | { type: "folder"; value: string }
+  | { type: "kategorie"; value: string }
   | { type: "tag"; value: string };
 
 const APP_TITLE = process.env.NEXT_PUBLIC_APP_TITLE ?? "Noten-Verwaltung";
