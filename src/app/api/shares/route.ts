@@ -24,14 +24,17 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(
     shares.map((s: { token: string; path: string; label: string; createdAt: string }) => {
-      const folder = isFolderShare(s.path);
+      const isTag = s.path.startsWith("tag:");
+      const folder = !isTag && isFolderShare(s.path);
+      const prefix = isTag ? "t" : folder ? "f" : "s";
       return {
         token: s.token,
         path: s.path,
         label: s.label,
         created_at: s.createdAt,
-        url: `${baseUrl}/${folder ? "f" : "s"}/${s.token}`,
+        url: `${baseUrl}/${prefix}/${s.token}`,
         isFolder: folder,
+        isTag,
       };
     })
   );

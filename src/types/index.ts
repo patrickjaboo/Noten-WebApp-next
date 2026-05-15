@@ -19,4 +19,5 @@ export type Share = {
   created_at: string;
   url: string;
   isFolder?: boolean;
+  isTag?: boolean;
 };

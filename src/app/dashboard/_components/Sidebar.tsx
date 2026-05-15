@@ -53,6 +53,33 @@ export function Sidebar({
     return shares.find((s) => s.isFolder && s.path === folderPath);
   }
 
+  function tagShareFor(tag: string): Share | undefined {
+    return shares.find((s) => s.isTag && s.path === `tag:${tag}`);
+  }
+
+  async function handleTagShare(e: React.MouseEvent, tag: string) {
+    e.stopPropagation();
+    const existing = tagShareFor(tag);
+    if (existing) {
+      await navigator.clipboard.writeText(existing.url).catch(() => {});
+      setCopied(`tag:${tag}`);
+      setTimeout(() => setCopied(null), 2000);
+      return;
+    }
+    const res = await fetch("/api/shares/tag", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tag }),
+    });
+    if (res.ok) {
+      const data = await res.json() as { token: string; url: string };
+      onShareCreated({ token: data.token, path: `tag:${tag}`, label: tag, created_at: new Date().toISOString(), url: data.url, isTag: true });
+      await navigator.clipboard.writeText(data.url).catch(() => {});
+      setCopied(`tag:${tag}`);
+      setTimeout(() => setCopied(null), 2000);
+    }
+  }
+
   async function handleFolderShare(e: React.MouseEvent, folderPath: string, label: string) {
     e.stopPropagation();
     const existing = folderShareFor(folderPath);
@@ -151,22 +178,39 @@ export function Sidebar({
             {sortedTags.map(([tag, count]) => {
               const active = isActive({ type: "tag", value: tag });
               const dotColor = getTagColor(tag).split(" ")[0];
+              const hasShare = !!tagShareFor(tag);
+              const isCopied = copied === `tag:${tag}`;
               return (
-                <button
-                  key={tag}
-                  onClick={() => onFilterChange({ type: "tag", value: tag })}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left ${
-                    active
-                      ? "bg-indigo-50 text-indigo-700 font-medium"
-                      : "text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
-                  <span className="flex-1 truncate">{tag}</span>
-                  <span className={`text-xs tabular-nums ${active ? "text-indigo-500" : "text-slate-400"}`}>
-                    {count}
-                  </span>
-                </button>
+                <div key={tag} className="group flex items-center gap-1">
+                  <button
+                    onClick={() => onFilterChange({ type: "tag", value: tag })}
+                    className={`flex-1 flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left min-w-0 ${
+                      active
+                        ? "bg-indigo-50 text-indigo-700 font-medium"
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor}`} />
+                    <span className="flex-1 truncate">{tag}</span>
+                    <span className={`text-xs tabular-nums ${active ? "text-indigo-500" : "text-slate-400"}`}>
+                      {count}
+                    </span>
+                  </button>
+                  <button
+                    onClick={(e) => handleTagShare(e, tag)}
+                    title={hasShare ? "Link kopieren" : "Link erstellen"}
+                    className={`shrink-0 p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 ${
+                      hasShare
+                        ? "text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50"
+                        : "text-slate-300 hover:text-indigo-500 hover:bg-indigo-50"
+                    }`}
+                  >
+                    {isCopied
+                      ? <Check className="w-3.5 h-3.5 text-emerald-500" />
+                      : <Link2 className="w-3.5 h-3.5" />
+                    }
+                  </button>
+                </div>
               );
             })}
           </div>
